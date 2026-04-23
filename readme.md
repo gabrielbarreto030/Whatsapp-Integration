@@ -1,87 +1,87 @@
 # WhatsApp Cloud API — .NET Integration
 
-ASP.NET Core Web API integrada com a [WhatsApp Cloud API da Meta](https://developers.facebook.com/docs/whatsapp/cloud-api), com suporte a envio de mensagens e fluxo conversacional via webhook.
+ASP.NET Core Web API integrated with the [Meta WhatsApp Cloud API](https://developers.facebook.com/docs/whatsapp/cloud-api), supporting message sending and a stateful conversational flow via webhook.
 
-![Demonstração do fluxo conversacional](TodoApi/assets/Exemplo.png)
-
----
-
-## Funcionalidades
-
-- **Envio de mensagens** via `POST /whatsapp/send`
-- **Webhook** para recebimento de mensagens em tempo real
-- **Fluxo conversacional com coleta de dados** acionado pela frase "Ola gostaria de um orçamento"
-- **Validação de campos** (nome completo, e-mail, data de nascimento)
-- **Swagger UI** disponível em `/swagger`
-- **Docker** pronto para deploy na porta 80
+![Conversational flow demo](TodoApi/assets/Example.png)
 
 ---
 
-## Stack
+## Features
 
-| Tecnologia | Uso |
+- **Send messages** via `POST /whatsapp/send`
+- **Webhook** for receiving real-time messages
+- **Conversational flow with data collection**, triggered by the phrase *"I'd like a quote"*
+- **Field validation** (full name, email, date of birth)
+- **Swagger UI** available at `/swagger`
+- **Docker-ready** for deployment on port 80
+
+---
+
+## Tech Stack
+
+| Technology | Purpose |
 |---|---|
-| .NET 9 / ASP.NET Core | Framework principal |
+| .NET 9 / ASP.NET Core | Core framework |
 | Swashbuckle | Swagger UI |
-| System.Text.Json | Serialização |
-| HttpClient (typed) | Chamadas à API da Meta |
-| ConcurrentDictionary | Estado de sessão em memória |
+| System.Text.Json | JSON serialization |
+| HttpClient (typed) | Meta API HTTP calls |
+| ConcurrentDictionary | In-memory session state |
 
 ---
 
-## Estrutura do projeto
+## Project Structure
 
 ```
 TodoApi/
 ├── Controllers/
 │   ├── WebhookController.cs       # GET + POST /webhook
 │   ├── WhatsAppController.cs      # POST /whatsapp/send
-│   └── BikeRentalController.cs    # POST /bikerental (exemplo base)
+│   └── BikeRentalController.cs    # Base example endpoint
 ├── Services/
-│   ├── WhatsAppService.cs         # Integração HTTP com a API da Meta
-│   └── ConversationService.cs     # Máquina de estados do fluxo conversacional
+│   ├── WhatsAppService.cs         # Meta API HTTP integration
+│   └── ConversationService.cs     # Conversational state machine
 ├── Models/
-│   └── WhatsAppWebhookPayload.cs  # Modelos do payload do webhook
+│   └── WhatsAppWebhookPayload.cs  # Webhook payload models
 ├── Dockerfile
-├── appsettings.json
+├── appsettings.example.json
 └── Program.cs
 ```
 
 ---
 
-## Configuração
+## Configuration
 
-O arquivo `appsettings.json` está no `.gitignore` e **nunca deve ser commitado**.
+`appsettings.json` is listed in `.gitignore` and **must never be committed**.
 
-Copie o arquivo de exemplo e preencha com suas credenciais:
+Copy the example file and fill in your credentials:
 
 ```bash
 cp TodoApi/appsettings.example.json TodoApi/appsettings.json
 ```
 
-Em seguida, preencha os campos no `appsettings.json`:
+Then edit `appsettings.json`:
 
 ```json
 {
   "WhatsApp": {
-    "AccessToken": "SEU_ACCESS_TOKEN",
-    "PhoneNumberId": "SEU_PHONE_NUMBER_ID",
-    "VerifyToken": "token_secreto_que_voce_escolhe",
-    "To": "5511999999999"
+    "AccessToken": "YOUR_ACCESS_TOKEN",
+    "PhoneNumberId": "YOUR_PHONE_NUMBER_ID",
+    "VerifyToken": "a_secret_string_you_choose",
+    "To": "15551234567"
   }
 }
 ```
 
-| Campo | Onde encontrar |
+| Field | Where to find it |
 |---|---|
 | `AccessToken` | Meta for Developers → WhatsApp → API Setup → Temporary access token |
 | `PhoneNumberId` | Meta for Developers → WhatsApp → API Setup → Phone Number ID |
-| `VerifyToken` | Qualquer string — você define e registra no painel da Meta |
-| `To` | Número de destino no formato `5511999999999` (sem `+`) |
+| `VerifyToken` | Any string you choose — register the same value in the Meta dashboard |
+| `To` | Destination phone number without `+` (e.g. `15551234567`) |
 
-### Em produção — variáveis de ambiente
+### Production — environment variables
 
-O .NET lê variáveis de ambiente automaticamente, usando `__` como separador de hierarquia. Prefira esse método em vez de arquivos de configuração em servidores e containers:
+.NET reads environment variables automatically using `__` as the hierarchy separator. Prefer this approach over config files on servers and containers:
 
 ```bash
 WhatsApp__AccessToken=...
@@ -92,18 +92,18 @@ WhatsApp__To=...
 
 ---
 
-## Rodando localmente
+## Running Locally
 
 ```bash
 cd TodoApi
 dotnet run
 ```
 
-Acesse o Swagger em: `http://localhost:5098/swagger`
+Swagger UI: `http://localhost:5098/swagger`
 
 ---
 
-## Rodando com Docker
+## Running with Docker
 
 ```bash
 cd TodoApi
@@ -112,82 +112,81 @@ docker build -t whatsapp-api .
 docker run -p 80:80 whatsapp-api
 ```
 
-A API ficará disponível em `http://localhost/swagger`.
+API available at `http://localhost/swagger`.
 
-Para passar as credenciais sem alterar o `appsettings.json`:
+To pass credentials at runtime without editing config files:
 
 ```bash
 docker run -p 80:80 \
-  -e WhatsApp__AccessToken=SEU_TOKEN \
-  -e WhatsApp__PhoneNumberId=SEU_ID \
-  -e WhatsApp__VerifyToken=SEU_TOKEN_SECRETO \
+  -e WhatsApp__AccessToken=YOUR_TOKEN \
+  -e WhatsApp__PhoneNumberId=YOUR_ID \
+  -e WhatsApp__VerifyToken=YOUR_SECRET \
   whatsapp-api
 ```
 
 ---
 
-## Configurando o Webhook na Meta
+## Configuring the Webhook on Meta
 
-1. Acesse [Meta for Developers](https://developers.facebook.com) → seu app → **WhatsApp → Configuration**
-2. Em **Webhook**, clique em **Edit**
-3. Preencha:
-   - **Callback URL:** `https://SEU_DOMINIO/webhook`
-   - **Verify Token:** o mesmo valor do `VerifyToken` no `appsettings.json`
-4. Clique em **Verify and Save**
-5. Em **Webhook fields**, habilite o campo **messages**
+1. Go to [Meta for Developers](https://developers.facebook.com) → your app → **WhatsApp → Configuration**
+2. Under **Webhook**, click **Edit**
+3. Fill in:
+   - **Callback URL:** `https://YOUR_DOMAIN/webhook`
+   - **Verify Token:** the same value set in `VerifyToken`
+4. Click **Verify and Save**
+5. Under **Webhook fields**, enable **messages**
 
-### Testando localmente com ngrok
+### Testing locally with ngrok
 
 ```bash
-# Terminal 1 — API
+# Terminal 1 — run the API
 dotnet run
 
-# Terminal 2 — túnel público
+# Terminal 2 — expose a public tunnel
 ngrok http 5098
 ```
 
-Use a URL gerada pelo ngrok (ex: `https://abc123.ngrok-free.app`) como Callback URL na Meta, adicionando `/webhook` ao final.
+Use the ngrok-generated URL (e.g. `https://abc123.ngrok-free.app/webhook`) as the Callback URL on Meta.
 
 ---
 
-## Fluxo conversacional
+## Conversational Flow
 
-Acionado quando o usuário envia uma mensagem contendo "orçamento":
+Triggered when the user sends a message containing the word **"quote"**.
 
 ```
-Usuário → "Ola gostaria de um orçamento"
-    Bot → Solicita nome completo (com exemplo)
+User  → "I'd like a quote"
+  Bot → Asks for full name        (with example)
 
-Usuário → "João da Silva"
-    Bot → Solicita e-mail (com exemplo)
+User  → "John Smith"
+  Bot → Asks for email address    (with example)
 
-Usuário → "joao@email.com"
-    Bot → Solicita data de nascimento (com exemplo)
+User  → "john@email.com"
+  Bot → Asks for date of birth    (with example)
 
-Usuário → "15/03/1990"
-    Bot → Confirma todos os dados coletados
+User  → "03/15/1990"
+  Bot → Confirms all collected data
 ```
 
-**Validações aplicadas:**
+**Validation rules:**
 
-| Campo | Regra |
+| Field | Rule |
 |---|---|
-| Nome | Mínimo 2 palavras, apenas letras |
-| E-mail | Formato válido de endereço de e-mail |
-| Data de nascimento | Formato `dd/MM/yyyy`, idade entre 1 e 120 anos |
+| Full name | At least 2 words, letters only |
+| Email | Valid email address format |
+| Date of birth | Format `MM/dd/yyyy`, age between 1 and 120 |
 
-Se a validação falhar, o bot informa o erro e repete a solicitação com um exemplo.
+If validation fails, the bot sends an error message and repeats the prompt with an example.
 
-O estado de cada conversa é mantido em memória por número de telefone, permitindo múltiplos usuários simultâneos sem interferência.
+Session state is stored in-memory per phone number, allowing multiple simultaneous users without interference.
 
 ---
 
 ## Endpoints
 
-| Método | Rota | Descrição |
+| Method | Route | Description |
 |---|---|---|
-| `GET` | `/webhook` | Verificação do webhook pela Meta |
-| `POST` | `/webhook` | Recebimento de mensagens |
-| `POST` | `/whatsapp/send` | Envio de mensagem para o número configurado |
-| `POST` | `/bikerental` | Endpoint de exemplo |
-
+| `GET` | `/webhook` | Meta webhook verification |
+| `POST` | `/webhook` | Receive incoming messages |
+| `POST` | `/whatsapp/send` | Send a message to the configured number |
+| `POST` | `/bikerental` | Base example endpoint |

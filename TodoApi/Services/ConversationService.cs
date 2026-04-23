@@ -15,13 +15,13 @@ public class ConversationService(WhatsAppService whatsApp)
         switch (session.State)
         {
             case ConversationState.None:
-                if (text.Contains("orçamento", StringComparison.OrdinalIgnoreCase))
+                if (text.Contains("quote", StringComparison.OrdinalIgnoreCase))
                 {
                     session.State = ConversationState.WaitingName;
                     await Send(from,
-                        "Olá! Fico feliz em ajudar com o orçamento.\n\n" +
-                        "Primeiro, preciso do seu *nome completo*.\n\n" +
-                        "Exemplo: _João da Silva_");
+                        "Hi! I'd be happy to help you with a quote.\n\n" +
+                        "First, could you share your *full name*?\n\n" +
+                        "Example: _John Smith_");
                 }
                 break;
 
@@ -31,15 +31,15 @@ public class ConversationService(WhatsAppService whatsApp)
                     session.Name = text;
                     session.State = ConversationState.WaitingEmail;
                     await Send(from,
-                        $"Obrigado, *{text}*!\n\n" +
-                        "Agora, informe seu *e-mail*.\n\n" +
-                        "Exemplo: _joao@email.com_");
+                        $"Thanks, *{text}*!\n\n" +
+                        "Now, what is your *email address*?\n\n" +
+                        "Example: _john@email.com_");
                 }
                 else
                 {
                     await Send(from,
-                        "Nome invalido. Informe nome e sobrenome, apenas letras.\n\n" +
-                        "Exemplo: _João da Silva_");
+                        "That doesn't look like a valid name. Please enter your first and last name (letters only).\n\n" +
+                        "Example: _John Smith_");
                 }
                 break;
 
@@ -49,15 +49,15 @@ public class ConversationService(WhatsAppService whatsApp)
                     session.Email = text;
                     session.State = ConversationState.WaitingBirthDate;
                     await Send(from,
-                        "Perfeito!\n\n" +
-                        "Por último, qual é a sua *data de nascimento*?\n\n" +
-                        "Exemplo: _15/03/1990_");
+                        "Got it!\n\n" +
+                        "Last one — what is your *date of birth*?\n\n" +
+                        "Example: _03/15/1990_");
                 }
                 else
                 {
                     await Send(from,
-                        "E-mail invalido. Verifique e tente novamente.\n\n" +
-                        "Exemplo: _joao@email.com_");
+                        "That doesn't look like a valid email. Please try again.\n\n" +
+                        "Example: _john@email.com_");
                 }
                 break;
 
@@ -66,17 +66,17 @@ public class ConversationService(WhatsAppService whatsApp)
                 {
                     _sessions.TryRemove(from, out _);
                     await Send(from,
-                        "Dados recebidos com sucesso!\n\n" +
-                        $"*Nome:* {session.Name}\n" +
-                        $"*E-mail:* {session.Email}\n" +
-                        $"*Nascimento:* {birthDate:dd/MM/yyyy}\n\n" +
-                        "Em breve entraremos em contato com o seu orçamento.");
+                        "All done! Here's a summary of your information:\n\n" +
+                        $"*Name:* {session.Name}\n" +
+                        $"*Email:* {session.Email}\n" +
+                        $"*Date of birth:* {birthDate:MM/dd/yyyy}\n\n" +
+                        "We'll be in touch with your quote shortly.");
                 }
                 else
                 {
                     await Send(from,
-                        "Data invalida. Use o formato dd/MM/yyyy e informe uma data real.\n\n" +
-                        "Exemplo: _15/03/1990_");
+                        "That doesn't look like a valid date. Please use the format MM/dd/yyyy.\n\n" +
+                        "Example: _03/15/1990_");
                 }
                 break;
         }
@@ -100,7 +100,7 @@ public class ConversationService(WhatsAppService whatsApp)
     private static bool IsValidBirthDate(string input, out DateOnly date)
     {
         date = default;
-        if (!DateOnly.TryParseExact(input, "dd/MM/yyyy", out date))
+        if (!DateOnly.TryParseExact(input, "MM/dd/yyyy", out date))
             return false;
 
         var today = DateOnly.FromDateTime(DateTime.Today);
