@@ -2,6 +2,8 @@
 
 ASP.NET Core Web API integrada com a [WhatsApp Cloud API da Meta](https://developers.facebook.com/docs/whatsapp/cloud-api), com suporte a envio de mensagens e fluxo conversacional via webhook.
 
+![Demonstração do fluxo conversacional](TodoApi/assets/Exemplo.png)
+
 ---
 
 ## Funcionalidades
