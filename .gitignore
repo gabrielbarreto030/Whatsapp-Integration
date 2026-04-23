@@ -1,0 +1,62 @@
+# Build output
+bin/
+obj/
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# JetBrains Rider
+.idea/
+
+# Publish output
+publish/
+**/publish/
+
+# dotnet tool manifests (local)
+.config/dotnet-tools.json
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+.dockerignore
+
+# Secrets / sensitive config
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+
+# ngrok
+ngrok.exe
+ngrok
+*.ngrok-free.app
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Temp
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
